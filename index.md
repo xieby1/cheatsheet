@@ -1,0 +1,3248 @@
+<h1>xieby1's cheatsheet</h1>
+
+# General
+
+符号
+
+* '🐁'仅在我的配置下可用，并不通用
+
+## Android
+
+### apktool
+
+```
+apktool d <APK_FILE>
+```
+
+## apt
+
+### proxy
+
+```
+# /etc/apt/apt.conf
+Acquire::http::Proxy "http://10.90.50.122:8889";
+```
+
+## awk
+
+### print nth to last
+
+[Using awk to print all columns from the nth to the last](https://stackoverflow.com/questions/2961635/)
+
+```bash
+# Print all but the first column
+awk '{$1=""; print substr($0,2)}' somefile
+# Print all but the fisrt two columns
+awk '{$1=$2=""; print substr($0,3)}' somefile
+```
+
+### delimiter
+
+[SO: awk delimiter](https://stackoverflow.com/questions/12204192)
+
+```bash
+awk -F'[, ]' '{print $1 " " $2}'
+```
+
+### sum column
+
+```bash
+awk '{sum+=$1} END {print sum}'
+```
+
+## bash
+
+### args length
+
+```bash
+$# # not include command
+$ miao.sh wang # $# is 1
+```
+
+### args range
+
+same to array
+
+```bash
+${@:3:2} # from position 3, length 2
+${@:3} # from position 3, to last
+```
+
+### cd last dir
+
+参考bash手册关于cd的说明
+
+```bash
+# 等价于cd $OLDPATH
+cd -
+```
+
+### commentable string concat
+
+```bash
+CMD=(
+    "args"
+    "${OTHER_ARGS[@]}"
+)
+eval "${CMD[@]}" # "${CMD[*]}"
+```
+
+### conditional constructs
+
+[gnu bash manual 3.2.5.2](https://www.gnu.org/software/bash/manual/bash.html#Conditional-Constructs)
+
+```bash
+if test-commands; then
+  consequent-commands;
+[elif more-test-commands; then
+  more-consequents;]
+[else alternate-consequents;]
+fi
+```
+
+* if its return 0,
+  * consequent-commands are executed
+
+### exit on fail
+
+```bash
+set -o errexit
+```
+
+### func src file
+
+[SO: find definition of bash func](https://superuser.com/questions/144772)
+
+```bash
+shopt -s extdebug
+declare -F <func>
+shopt -u extdebug
+```
+
+### here document
+
+```bash
+COMMAND <<InputComesFromHERE
+# ...
+InputComesFromHERE
+```
+
+### parallel execution
+
+[SE: bash parellel exec](https://unix.stackexchange.com/questions/103920/parallelize-a-bash-for-loop/436713#436713)
+
+```bash
+N=4
+for i in {a..z}; do
+  (
+    # do your stuff here
+  ) &
+  if [[ $(jobs -r -p | wc -l) -ge $N ]]; then
+    wait -n
+  fi
+done
+wait
+echo all done
+```
+
+### print command
+
+```bash
+# see `help set`
+set -x # turn on
+set +x # turn off
+```
+
+### read file lines
+
+```bash
+while read line
+do
+    echo "$line"
+done < file
+```
+
+### test a var is num
+
+[How do I test if a variable is a number in Bash?](https://stackoverflow.com/questions/806906/)
+
+```bash
+re='^[0-9]+$'
+if [[ $yournumber =~ $re ]]
+then
+   echo "is a num!"
+fi
+```
+
+### trace
+
+```bash
+set -o xtrace
+```
+
+## binfmt
+
+### i386
+
+```bash
+echo ':i386:M::\x7fELF\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x03:\xff\xff\xff\xff\xff\xfe\xfe\xff\xff\xff\xff\xff\xff\xff\xff\xff\xfa\xff\xff:/usr/local/bin/qemu-i386:' >/proc/sys/fs/binfmt_misc/register
+```
+
+### qemu
+
+```bash
+sudo ./scripts/qemu-binfmt-conf.sh  --qemu-path /usr/local/bin/qemu-x86_64 --systemd x86_64
+```
+
+### x64
+
+```bash
+echo ':x64:M::\x7fELF\x02\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x3e\x00:\xff\xff\xff\xff\xff\xfe\xfe\x00\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff\xff:/usr/local/bin/qemu-x86_64:' >/proc/sys/fs/binfmt_misc/register
+```
+
+## cmake
+
+### NOTED
+
+cmake use CMakeCache.txt
+
+If meet unexpected behavior,
+
+clean all cmake generated files
+
+### compile_command.json
+
+```bash
+-DCMAKE_EXPORT_COMPILE_COMMANDS=1
+```
+
+### log
+
+* `CMakeFiles/CMakeError.log`
+* `CMakeFiles/CMakeOutput.log`
+
+## container
+
+### build show stdout
+
+[SO](https://stackoverflow.com/questions/65580085/)
+
+```
+--progress=plain
+```
+
+### ls containers
+
+```bash
+docker ps -as
+```
+
+### ls imgs
+
+```bash
+docker images -a
+```
+
+### prune
+
+```bash
+docker system prune
+```
+
+### rm all-containers
+
+```bash
+docker ps -aq | xargs docker rm
+```
+
+### rm all-imgs
+
+```bash
+docker images -aq | xargs docker rmi
+```
+
+### rm container
+
+```bash
+docker rm <containers>
+```
+
+### rm img
+
+```bash
+docker rmi <images>
+```
+
+### rm untagged-img
+
+```
+podman images | grep "^<none>" | awk '{print $3}' | xargs podman rmi
+```
+
+### stop containers
+
+```bash
+docker stop <containers>
+```
+
+### build
+
+```bash
+podman build --network=host -t <tag>
+```
+
+### image mount
+
+```bash
+podman unshare
+podman image mount <image>
+```
+
+### run
+
+```bash
+podman run --rm --network=host -it <image>
+```
+
+### debugger
+
+[SO: gdb in docker](https://stackoverflow.com/questions/42029834)
+
+```bash
+--cap-add=SYS_PTRACE
+```
+
+## dd
+
+### extract bytes from file
+
+https://stackoverflow.com/questions/1423346
+
+Noted: dd only take decimal number,
+0x prefix does not work.
+
+```bash
+dd skip=<start> count=<size> if=<input> of=<output> bs=1
+```
+
+## disk
+
+### dd
+
+```bash
+dd if=<INPUT/PATH> of=/dev/<OUTPUT> status=progress
+```
+
+### disk usage
+
+```bash
+df -h
+```
+
+### file folder-size
+
+```bash
+du -sBM * | sort -n
+```
+
+## file
+
+### 查看meta info，例如pdf，详细见man
+
+```bash
+exiftool -Title=<title> <file>
+exiftool -Author=<author> <file>
+```
+
+## figlet
+
+### example
+
+http://www.figlet.org/examples.html
+
+### fonts
+
+<FIGLET_PATH>/share/figlet/*.flf
+
+## font
+
+### list
+
+[SE: get name of font](https://unix.stackexchange.com/questions/305931)
+
+[SO: get name of fonf](https://stackoverflow.com/questions/68033662)
+
+```bash
+fc-list
+fc-scan
+```
+
+### google-fonts
+
+repo: [GH: google/fonts](https://github.com/google/fonts)/ofl/
+
+search: [fonts.google.com](https://fonts.google.com/)
+
+### grub
+
+[SE: customize GRUB font size](https://unix.stackexchange.com/questions/31672/can-grub-font-size-be-customised)
+
+```bash
+sudo grub-mkfont -s 36 -o /boot/grub/fonts/DejaVuSansMono.pf2 /usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf
+fc-list
+vim /boot/grub/grub.cfg
+```
+
+### tty
+
+[SE: otf to psf](https://unix.stackexchange.com/questions/161890/how-can-i-make-a-psf-font-for-the-console-from-a-otf-one)
+
+[reddit: ttf to psf](https://www.reddit.com/r/linuxquestions/comments/7st7hz/any_way_to_convert_ttf_files_to_psf_files/)
+
+[dpi cal](https://www.sven.de/dpi/)
+
+```bash
+otf2bdf -r 242 -p 36 /usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf -o ~/Desktop/DejaVuSansMono.bdf
+```
+
+## freebsd
+
+### increase disk
+
+Increase qcow2 2GB
+
+```bash
+qemu-img resize <.qcow2> +2G
+```
+
+Inside FreeBSD
+
+```bash
+camcontrol reporbe ada0
+# find out index
+gpart show
+gpart resize -i <index> ada0
+growfs /
+```
+
+### linuxulator
+
+[FreeBSD: Linux Bin Compat](https://docs.freebsd.org/en/books/handbook/linuxemu/)
+
+```
+# edit /etc/rc.conf
+linux_enable="YES"
+```
+
+```bash
+service linux start
+```
+
+## gcc
+
+### inline asm
+
+No clobber, may segment fault!
+Just an example.
+
+```c
+#include <stdio.h>
+int a = 10;
+int b = 20;
+int result;
+int main(void)
+{
+   asm( "mov a, %eax\n\t"
+        "mov b, %ebx\n\t"
+        "add %ebx, %eax\n\t"
+        "mov %eax, result");
+   printf("the result is %d\n", result);
+   return 0;
+}
+```
+
+### extended inline asm
+
+```c
+#include <stdio.h>
+int a = 10;
+int b = 20;
+int result;
+int main(void)
+{
+   asm( "mov a, %%eax\n\t"
+        "mov b, %%ebx\n\t"
+        "add %%ebx, %%eax\n\t"
+        "mov %%eax, result"
+        : /* no outputs*/
+        : /* no inputs */
+        : "eax", "ebx");
+   printf("the result is %d\n", result);
+   return 0;
+}
+```
+
+### predefined macros
+
+[2012.SO: preprocessor defined macros](https://stackoverflow.com/questions/10904873/anyway-to-see-list-of-preprocessor-defined-macros)
+
+```bash
+gcc -dM -E - < /dev/null
+touch bla.c && gcc -dM -E bla.c
+```
+
+### text segment addr
+
+[SO](https://stackoverflow.com/questions/19470666/gcc-how-to-tell-gcc-to-put-the-main-function-at-the-start-of-the-text-sectio)
+
+```bash
+gcc -static -Wl,-Ttext=0x1000 <Args>
+```
+
+## gdb
+
+### frame
+
+```gdb
+bt
+frame <bt num>
+info frame <bt num>
+info locals
+```
+
+## gem5
+
+### terminology
+
+Simulation Mode
+
+* Full System (FS)
+* Syscall Emulation (SE)
+
+### cache
+
+* mshr: Miss Status Handle Register
+* tgt: ?[TODO]
+
+### generate hh from py
+
+```bash
+# generate header from MyMemObject.py
+scons build/ARM/params/MyMemObject.hh
+```
+
+### generate doxygen
+
+output: src/doxygen/html
+
+```bash
+cd src
+doxygen
+```
+
+### SE (syscall emu)
+
+```bash
+gem5.opt configs/example/se.py --cmd <CMD>
+```
+
+## git
+
+### remote branches
+
+列举remote的分支
+
+```bash
+# 无需联网
+git branch -r [-l <patthern>]
+# 需要联网
+git remote show <remote>
+git ls-remote <remote>
+```
+
+### 查找删除某行的commit
+
+[SO: find removed line](https://stackoverflow.com/questions/12591247/how-to-find-commit-when-line-was-deleted-removed)
+
+```bash
+# 面对merge节点似乎有问题
+git log -c -S'<string>' <file>
+git log -c -G'<regex>' <file>
+# 然后搜索
+/<string>
+```
+
+### clone server-Codes
+
+```bash
+git clone git://10.90.50.99/<REPO>
+```
+
+### clone specific-tag
+
+```bash
+git clone -b <tag> --depth=1 <repo>
+```
+
+### list remote-tags
+
+```bash
+git ls-remote --tags <repo>
+```
+
+### rebase interactive
+
+```bash
+# root commit
+git rebase -i --root
+# non-root commit
+git rebase -i <commits>
+```
+
+### server Codes
+
+```bash
+git daemon --base-path=/home/xieby1/Codes/ --export-all
+```
+
+### create uncommit patch
+
+[create uncommit patch](https://stackoverflow.com/questions/5159185/)
+
+```bash
+git diff > <xxx.patch>
+```
+
+### visualization
+
+[SO: git visualization](https://stackoverflow.com/questions/51838290/visualize-git-branch-topology-only-with-no-commit-history)
+
+```bash
+# simplified
+git log --all --decorate --oneline --graph --simplify-by-decoration
+# full
+git log --all --decorate --oneline --graph
+```
+
+## grep
+
+### only filename
+
+> Scanning each input file
+> stops upon first match.
+
+Therefore, it is fast!
+
+```bash
+grep -l
+```
+
+## headscale tailscale
+
+### register
+
+```bash
+sudo docker exec headscale headscale -n <NETWORK> nodes register --key <KEY>
+```
+
+### reset login server
+
+```bash
+tailscale up --force-reauth --reset
+```
+
+### rm node
+
+```bash
+sudo docker exec -it headscale headscale nodes del -i <ID>
+```
+
+### exec cmd
+
+```bash
+sudo docker exec headscale headscale --help
+```
+
+### client register
+
+```bash
+sudo tailscale --socket <PATH> up --login-server <URL>[:PORT]
+```
+
+## html
+
+### detail
+
+fold/collapse/expand
+
+```html
+<details>
+  <summary>Details</summary>
+  miao
+</details>
+```
+
+### span color
+
+```html
+<span style="background: red; color: white; font-weight: bold;">
+```
+
+### time stamp
+
+```html
+<div style="text-align:right; font-size:3em;">2022.04.12</div>
+```
+
+## icon design
+
+* figma
+* svgo
+* edit
+  * stroke="currentColor"
+  * move attrs to svg tag
+
+## image/picture
+
+### get dimension/size
+
+```
+identify <image>
+```
+
+## Inkscape
+
+### extract pdf
+
+```
+Poppler/Cairo import (Huge size)
+<Ctrl><Shift>G # ungroup
+! # invert selection
+<Ctrl><Shift>R # resize canvas
+Extensions->Text->Replace Font
+```
+
+## jekyll
+
+```bash
+# first time run
+nix-shell -p bundler --run "bundle install"
+# serve
+nix-shell -p bundler -p jekyll --run "bundle exec jekyll serve -H 0.0.0.0 -P 4000"
+```
+
+## libreoffice
+
+### edit/view mode
+
+```
+ctrl+shift+m
+```
+
+## Licenses
+
+### MIT
+
+* 随意使用
+* 保留该MIT许可
+* 作者不负责
+
+## linux
+
+### 编译
+
+```bash
+make defconfig && make
+```
+
+### 版本号
+
+```bash
+include/config/kernel.release
+make menuconfig: General setup -> Local version
+```
+
+### 安装
+
+```bash
+make INSTALL_PATH=<path> install
+make INSTALL_MOD_PATH=<path> modules_install
+```
+
+### 生成源码跳转文件
+
+```bash
+# 需要先编译
+./scripts/clang-tools/gen_compile_commands.py
+make ARCH=x86 COMPILED_SOURCE=1 cscope
+```
+
+### 内部结构
+
+符号表[WP: System.map](https://en.wikipedia.org/wiki/System.map)
+
+由`nm`生成，符号类型见`man nm`
+
+* 内核暴露的符号`/proc/kallsyms`
+* 或是由源码生成`System.map`
+
+系统调用表`sys_call_table`
+
+### 内核信息重定向
+
+ref: [dmesg output to tty](https://www.linuxquestions.org/questions/linux-newbie-8/dmesg-output-to-tty-707524/)
+
+x86上不可靠：输出不全，几次就关闭了
+
+```bash
+tty # `who am i` may not output
+cat /proc/kmsg > <stdio dev file>
+```
+
+### mod
+
+show info about a mod
+
+```bash
+modinfo <mod>
+```
+
+## llvm
+
+### generate ll
+
+```bash
+clang -S -emit-llvm <file.c> -o <file.ll>
+```
+
+### generate bc
+
+```bash
+clang -c -emit-llvm <file.c> -o <file.bc>
+```
+
+### run ir
+
+```bash
+lli <file.ll/bc>
+```
+
+## make
+
+### terminology
+
+```makefile
+# a rule
+target … : prerequisites …
+	recipe
+	…
+```
+
+### all executables
+
+```makefile
+EXECUTABLES=$(patsubst %.cpp, %, $(wildcard *.cpp))
+all: ${EXECUTABLES}
+```
+
+### clean executables
+
+[SO: How do I execute each command in a list?](https://stackoverflow.com/questions/12528637/)
+
+```makefile
+define \n
+
+
+endef
+$(foreach x,${EXECUTABLES},rm ${x}${\n})
+```
+
+### func wildcard
+
+```makefile
+$(wildcard pictures/*.drawio)
+```
+
+### grouped targets
+
+[make manual: multiple targets](https://www.gnu.org/software/make/manual/html_node/Multiple-Targets.html#Multiple-Targets)
+
+```makefile
+foo bar biz &: baz boz
+        echo $^ > foo
+        echo $^ > bar
+        echo $^ > biz
+```
+
+### hash dep
+
+[GH: hashdeps](https://github.com/olipratt/hashdeps)
+
+```makefile
+include hashdeps.mk
+combined.txt: $(call hash_deps,a.txt b.txt)
+	echo "Concatenating files"
+	cat $(call unhash_deps,$^) > $@
+```
+
+### implicit rule
+
+```makefile
+%:%.c
+	$(CC) $< -o $@
+```
+
+### grouped target
+
+[make manual](https://www.gnu.org/software/make/manual/html_node/Multiple-Targets.html#Multiple-Targets)
+
+```
+foo bar biz &: baz boz
+        echo $^ > foo
+        echo $^ > bar
+        echo $^ > biz
+```
+
+### prerequisite
+
+```makefile
+$< # first
+$^ # all
+$(word 2,$^) # second
+```
+
+### target依赖树
+
+[SO: makefile dependency tree](https://unix.stackexchange.com/questions/283478/how-to-display-dependencies-given-in-a-makefile-as-a-tree)
+
+``` bash
+make -nd <target> | make2graph
+# makefile2graph <target>
+```
+
+### 列出所有targets
+
+```bash
+remake --targets
+```
+
+## maven
+
+### proxy
+
+https://maven.apache.org/guides/mini/guide-proxies.html
+
+```xml
+<settings>
+  <proxies>
+   <proxy>
+      <id>example-proxy</id>
+      <active>true</active>
+      <protocol>http</protocol>
+      <host>proxy.example.com</host>
+      <port>8080</port>
+      <username>proxyuser</username>
+      <password>somepassword</password>
+      <nonProxyHosts>www.google.com|*.example.com</nonProxyHosts>
+    </proxy>
+  </proxies>
+</settings>
+```
+
+## mdbook
+
+### build
+
+同名md和html
+html优先
+
+## network
+
+### dns resolve
+
+```bash
+host <domain name>
+```
+
+### scan local
+
+```bash
+nmap 192.168.1.0/24
+```
+
+### connect hidden wifi
+
+[wpa_cli connection to hidden ssid](https://unix.stackexchange.com/questions/555380)
+
+```
+> add_network x
+> set_network x ssid "hidden_ssid"
+> set_network x psk "secret"
+// ALLOW CONNECT TO HIDDEN SSID
+> set_network x scan_ssid 1
+> enable_network x
+> save_config
+> select_network x
+```
+
+### raspberrypi ubuntu netplan
+
+
+```yaml
+# /etc/netplan/50-cloud-init.yaml
+network:
+  version: 2
+  wifis:
+    renderer: networkd
+    wlan0:
+      access-points:
+        <name>:
+          password: <...>
+          hidden: true
+      dhcp4: true
+      optional: true
+```
+
+## ocr
+
+### tesseract
+
+```bash
+# 列支持的语言
+tesseract --list-langs
+```
+
+### ocrmypdf
+
+详细见`ocrmypdf.md`
+
+ocr会将原pdf栅格化，
+
+所以需要分离文本和图片
+
+```bash
+# 去除文本
+gs -o notext.pdf -dFILTERTEXT \
+-sDEVICE=pdfwrite <input.pdf>
+# 运行ocr
+ocrmypdf --force-ocr --output-type pdf \
+-l $lang notext.pdf ocr.pdf
+# 去除图片仅保留文本
+gs -o textonly.pdf -dFILTERIMAGE \
+-dFILTERVECTOR -sDEVICE=pdfwrite ocr.pdf
+# 叠加文本
+qpdf notext.pdf --overlay \
+textonly.pdf -- <output.pdf>
+```
+
+## pandoc
+
+### 可用代码高亮
+
+[pandoc: syntax highlighting](https://pandoc.org/MANUAL.html#syntax-highlighting)
+
+```bash
+pandoc --list-highlight-languages
+```
+
+### 打印默认模板
+
+```bash
+pandoc -D <FORMAT>
+```
+
+### print default styles
+
+```bash
+--print-default-data-file=templates/styles.html
+```
+
+## perl
+
+### man/doc
+
+```bash
+perldoc perlrun
+```
+
+### sed like rexeg lookbehind
+
+[sed lookbehind](https://stackoverflow.com/questions/26110266/does-lookbehind-work-in-sed)
+
+```bash
+perl -pe 's/(?<=foo)bar/test/g' file.txt
+```
+
+## pic
+
+### jpgs2pdf
+
+```bash
+convert input1.jpg input2.jpg input3.jpg output.pdf
+```
+
+### resize
+
+```bash
+convert input.xxx -resize 100x200\! output.xxx
+```
+
+## pkgs
+
+### apk
+
+```bash
+apk info -L <pkg>
+```
+
+### deb
+
+```bash
+dpkg-deb -c <package_name.deb>
+```
+
+### installed
+
+```bash
+dpkg-query -L <package_name>
+```
+
+### not installed
+
+```bash
+apt-file list <package_name>
+```
+
+## qemu
+
+### host net
+
+`10.0.2.2`
+
+### smb
+
+```bash
+mount -t cifs -o user=miao%miao //10.0.2.4/qemu Host/
+```
+
+### system file disk
+
+```bash
+[qemu-sys] -m 16 -nographic -fda [file]
+```
+
+## qemu-src
+
+### tcg/
+
+* tcg.c, tcg-op.c: generate tcg
+* <arch>/: tcg => <arch>
+* tci.c: tcg => interpreting
+* README: tcg syntax intro
+
+## qemu wrapper
+
+### quickemu
+
+```bash
+quickemu --display none --vm ~/Img/ubuntu-22.10.conf
+# cat ~/Img/ubuntu-22.10/ubuntu-22.10.ports
+ssh quickemu
+```
+
+### OSX-KVM
+
+```bash
+./OpenCore-Boot.sh
+```
+
+### utm
+
+ssh forward by useing `emulated vlan`
+
+## revealjs
+
+### align
+
+[SO: center child divs inside parent div](https://stackoverflow.com/questions/13091433/center-child-divs-inside-parent-div)
+
+```markdown
+:::{style="display:inline-block; text-align:left;"}
+things here are all
+
+left aligned
+
+!
+:::
+```
+
+### chalkboard
+
+```
+del: clear current
+backspace: clear all
+c: note canva
+b: chalkboard
+d: download drawings
+x: previous color
+y: next color
+right click: eraser
+```
+
+### fragments fade
+
+[revealjs fragments](https://revealjs.com/fragments/)
+
+| Name                    | Effect                                              |
+|-------------------------|-----------------------------------------------------|
+| fade-out                | Start visible, fade out                             |
+| fade-up                 | Slide up while fading in                            |
+| fade-down               | Slide down while fading in                          |
+| fade-left               | Slide left while fading in                          |
+| fade-right              | Slide right while fading in                         |
+| fade-in-then-out        | Fades in, then out on the next step                 |
+| fade-in-then-semi-out   | Fades in, then to 50% on the next step              |
+| semi-fade-out           | Fade out to 50%                                     |
+
+### fragments highlight
+
+| Name                    | Effect                                              |
+|-------------------------|-----------------------------------------------------|
+| highlight-red           | Turn text red                                       |
+| highlight-green         | Turn text green                                     |
+| highlight-blue          | Turn text blue                                      |
+| highlight-current-red   | Turn text red, then back to original on next step   |
+| highlight-current-green | Turn text green, then back to original on next step |
+| highlight-current-blue  | Turn text blue, then back to original on next step  |
+
+### fragments others
+
+| Name                    | Effect                                              |
+|-------------------------|-----------------------------------------------------|
+| grow                    | Scale up                                            |
+| shrink                  | Scale down                                          |
+| strike                  | Strike through                                      |
+
+### fragments order
+
+```html
+<p class="fragment" data-fragment-index="3">Appears last</p>
+<p class="fragment" data-fragment-index="1">Appears first</p>
+<p class="fragment" data-fragment-index="2">Appears second</p>
+```
+
+### print pdf
+
+Append `?print-pdf` to URL.
+
+### toc style
+
+```html
+<style>nav {...}<style>
+```
+
+### TODO: yaml_metadata_block
+
+## route
+
+### add
+
+```bash
+sudo route add -net 172.17.103.0 \
+gw 10.90.50.254 \
+netmask 255.255.255.0 \
+metric 1000 \
+dev enp9s0
+```
+
+### del
+
+```bash
+sudo route del -net 172.17.103.0 \
+gw 10.90.50.254
+netmask 255.255.255.0 \
+dev enp9s0
+```
+
+## rust
+
+### installed targets
+
+```bash
+rustup show
+```
+
+### 交叉编译
+
+```bash
+rustc --print target-list
+rustup target add <TARGET>
+cargo build --target=<TARGET> --release
+```
+
+## scons
+
+### clean
+
+```bash
+scons -c
+```
+
+## scrcpy
+
+### otg mouse/keyboard
+
+[GH: barrier: Please make an Android client](https://github.com/debauchee/barrier/issues/1452)
+
+```bash
+# In this mode, adb (USB debugging) is not necessary
+scrcpy --window-width 100 --window-height 100 --otg -s DEVICEID
+```
+
+## sed
+
+### overview
+
+* detailed document
+  * [gnu sed manual](https://www.gnu.org/software/sed/manual/sed.html)
+* brief synopsis
+  * `man sed`
+
+### terminology
+
+```
+[addr]X[options]
+[addr]{X1[options]; X2[options]; ...}
+```
+
+### regex
+
+POSIX.2 BREs
+
+* [gnu sed manual](https://www.gnu.org/software/sed/manual/sed.html#Regular-Expressions-Overview)
+* [wikibooks: POSIX BREs](https://en.wikibooks.org/wiki/Regular_Expressions/POSIX_Basic_Regular_Expressions)
+
+### recursive all files
+
+[SO](https://stackoverflow.com/questions/1583219)
+
+* `-print0`
+
+  results separated by null char
+
+```bash
+find . -type f -print0 | \
+xargs -0 sed -i 's/.../.../g'
+```
+
+### if match
+
+if match return 1
+
+else return 0
+
+```bash
+sed '/<pattern>/Q 1'
+```
+
+### new line
+
+[SO: How replace a newline](https://stackoverflow.com/questions/1251999/)
+
+```bash
+sed -z 's/\nwang\nmiao\n//g'
+```
+
+### refer to match
+
+```bash
+sed 's/\(.*\)miao/\1wang/g'
+```
+
+## sixu
+
+### all
+
+```dot
+// command line:
+//   dot -Tsvg -O sixu.dot
+
+
+digraph {
+// attributes
+/// graph
+rankdir=BT;
+/// subgraph
+newrank=true;
+style=filled;
+//// color name: https://graphviz.org/doc/info/colors.html
+color=whitesmoke;
+/// node
+node[
+shape=box,
+style="filled, solid",
+color=black,
+fillcolor=white,
+];
+/// edge
+edge[
+minlen=1,
+//weight=1,
+// If false, the edge is not used in ranking the nodes.
+//constraint=true,
+];
+
+
+
+}
+```
+
+### today
+
+```dot
+"22Apr12+" -> "22Apr12-" -> "22Apr12+";
+subgraph cluster_22Apr12
+{
+x22Apr12_
+}
+{rank=same;
+"22Apr12-";
+x22Apr12_
+}
+{rank=same;
+"22Apr12+";
+}
+```
+
+## ssh
+
+### bind address
+
+```bash
+ssh -L 8890:example.org:8889 -N -T username@remote_host
+```
+
+### nixos x forward
+
+```bash
+ssh -Y
+```
+
+## swap
+
+### create swapfile
+
+```
+sudo fallocate -l 4G /swapfile
+# optional
+sudo chmod 600 /swapfile
+sudo mkswap /swapfile
+sudo swapon /swapfile
+```
+
+## systemd unit
+
+### After/Before说明
+
+```bash
+man systemd.unit
+```
+
+### man pages
+
+* systemd
+* systemd.unit
+* systemd.syntax
+* systemd.service
+
+### user目录
+
+`man systemd.unit`
+
+`~/.config/systemd/`
+
+### service状态
+
+```bash
+systemctl --user status <service>
+journalctl --user -u <service>
+```
+
+### service output
+
+```bash
+# sys
+journalctl -f -u <service>
+# user
+journalctl --user -f -u <service>
+```
+
+### 列举unit类
+
+```bash
+# 例如列出list
+systemctl list-units --type target
+```
+
+## systemd unit examples
+
+### auto login
+
+[ubuntu auto login](https://gist.github.com/thelimeburner/a033c1f8445bfb003b24b4c7bca4f601)
+
+```bash
+#Create the directory:
+sudo mkdir /etc/systemd/system/getty@tty1.service.d
+#Create file:
+sudo vim /etc/systemd/system/getty@tty1.service.d/autologin.conf
+#Insert:
+[Service]
+ExecStart=
+ExecStart=-/sbin/agetty --autologin YOURUSERNAMEHERE --noclear %I 38400 linux
+```
+
+### auto swapon
+
+```ini
+[Unit]
+Description=Swapon
+
+[Install]
+WantedBy=default.target multi-user.target
+
+[Service]
+ExecStart=swapon /swapfile
+```
+
+## tmux
+
+### auto start tmux
+
+```bash
+[[ $TERM != "screen" ]] && exec tmux
+```
+
+### terminology
+
+`man tmux`: Description
+
+* session
+  * window
+    * pane = pseudo terminal (pty)
+
+Any number of tmux instances can
+
+cnnect to the same session.
+
+### split
+
+```
+<C-b> " // vertical
+<C-b> % // horizontal
+```
+
+## wine
+
+### regedit
+
+* [Regedit](https://wiki.winehq.org/Regedit)
+* [Useful Registry Keys](https://wiki.winehq.org/index.php?title=Useful_Registry_Keys)
+* `wine regedit /?`
+
+## WSL
+
+### wslcompact
+
+https://github.com/okibcn/wslcompact
+
+### shrink vdisk
+
+```powershell
+wsl --shutdown
+diskpart
+select vdisk \
+file="C:\Users\<User>\AppData\Local\ \
+Packages\CanonicalGroupLimited.UbuntuonWindows... \
+\LocalState\ext4.vhdx"
+compact vdisk
+```
+
+## x11
+
+### restart server
+
+```
+Alt-F2
+r
+```
+
+### Xephyr
+
+```bash
+Xephyr :2 -resizeable  -dpi 48 -host-cursor
+```
+
+```bash
+DISPLAY=:2 <command>
+```
+
+### multiple DPI
+
+[Mixed DPI](http://wok.oblomov.eu/tecnologia/mixed-dpi-x11/#therandrway)
+
+[SE: cursor flicker](https://unix.stackexchange.com/questions/358992/cursor-flickers-with-xrandr-scaling)
+
+```bash
+xrandr --output DP-1 --scale-from 2880x1800
+# Stop flicker
+xrandr --output eDP-1 --scale 0.9999x0.9999
+```
+
+## xdg
+
+### xdg-mime
+
+```bash
+xdg-mime query filetype <file>
+xdg-mime query default <type>
+```
+
+## yarn
+
+### add
+
+```bash
+yarn global add node_module
+```
+
+### bin
+
+```bash
+yarn global bin
+```
+
+## others
+
+### alacritty search
+
+```
+C-S-f
+Enter
+S-Enter
+```
+
+### ccls
+
+[.ccls file](https://github.com/MaskRay/ccls/wiki/Project-Setup#ccls-file)
+
+```
+clang
+-I<PATH>
+-D<VAR>
+```
+
+### crypt
+
+```bash
+perl -e "print crypt('wjxby','xb');"
+```
+
+### combine pdf
+
+pdftk <file1.pdf ...> cat output <output.pdf>
+
+### dgen-sdl
+
+```bash
+dgen <path>
+```
+
+### flame graph
+
+https://github.com/brendangregg/FlameGraph
+
+```bash
+sudo perf record -g <cmd>
+sudo perf script > out.perf
+stackcollapse-perf.pl out.perf > out.folded
+flamegraph.pl out.folded > out.svg
+```
+
+### gnome autostart
+
+[gnome autostart programs](https://www.addictivetips.com/ubuntu-linux-tips/autostart-programs-on-gnome-shell/)
+
+mov desktop file to
+
+`~/.config/autostart/`
+
+### gnome desktop spec
+
+https://developer-old.gnome.org/desktop-entry-spec/
+
+### gnome dock new window
+
+TODO: dash-to-dock? or original dock?
+
+`ctrl`+`super`+`<num>`
+
+### open desktop file
+
+```bash
+gtk-launch <xxx.desktop>
+```
+
+### gprof
+
+```bash
+# compile
+gcc ... -gp
+# run <file>
+# show
+gprof <file>
+```
+
+### kitty ssh
+
+[SO: tmux kitty](https://unix.stackexchange.com/questions/470676)
+
+```bash
+kitty +kitten ssh myserver
+```
+
+[second-level servers](https://github.com/kovidgoyal/kitty/issues/2053)
+
+```bash
+kitty +kitten ssh -J jump_server destination_server
+```
+
+### pkg-config
+
+```bash
+# 获取package的名字
+pkg-config --list-all | grep <xxx>
+# 获取c编译、链接参数
+pkg-config --cflags --libs <pkg>
+```
+
+### pdftohtml
+
+```bash
+pdftotext -noframes -i -q -p -c <pdf>
+```
+
+### pdftotext
+
+```bash
+pdftotext -q <pdf>
+```
+
+### 进程树
+
+```bash
+ps -jHg <pid> # 进程子树
+pstree -psal <pid> # 完整树
+```
+
+### new user
+
+```bash
+adduser xieby1
+usermod -aG sudo xieby1
+```
+
+### drawio no snapping
+
+[SE: no arrows snapping](https://webapps.stackexchange.com/questions/124103/how-do-i-prevent-arrows-from-snapping-when-moving-them-on-draw-io)
+
+hold `ctrl` + `shift`
+
+### iconv
+
+```
+# 文本编码转换
+iconv -f gb18030 -t utf-8 <output>
+```
+
+### pipe clipboard
+
+```
+ | xclip -selection clipboard
+```
+
+### shebang with arguments
+
+[SE: Multiple arguments in shebang](https://unix.stackexchange.com/questions/399690/)
+
+```
+#!/usr/bin/env -S cmd arg1 arg2 ...
+```
+
+### sort first column
+
+```bash
+sort -s -n -k 1,1
+```
+
+### calibrate touchscreen
+
+[SO: Calibrate one touch one not](https://unix.stackexchange.com/questions/473721/calibrating-a-touch-screen-on-dual-monitors-one-touch-one-not)
+
+```bash
+xinput --map-to-output $(xinput list --id-only "WingCoolTouch WingCoolTouch") DP-1
+```
+
+# Lang
+
+## C/CPP
+
+### clang-format config
+
+```bash
+clang-format -style=llvm -dump-config > .clang-format
+```
+
+### clang-format on/off
+
+```c
+// clang-format off
+...
+// clang-format on
+```
+
+## python
+
+### debug script
+
+```python
+import pdb
+pdb.set_trace()
+```
+
+### object attr
+
+```python
+dir()
+vars()
+```
+
+### pyright ignore
+
+[ignore one line](https://stackoverflow.com/questions/57335636)
+
+```python
+<code needed to be ignored> # type: ignore
+```
+
+### pyright local conf
+
+https://microsoft.github.io/pyright/#/configuration
+
+```yaml
+# pyrightconfig.json
+{
+  reportGeneralTypeIssues = false,
+}
+```
+
+### requirement syntax
+
+requirements.txt
+
+* [Requirement Specifiers](https://pip.pypa.io/en/stable/reference/requirement-specifiers/)
+  * [PEP 508](https://peps.python.org/pep-0508/)
+
+E.g.
+
+```python
+requests [security] >= 2.8.1, == 2.8.* ; python_version < "2.7"
+```
+
+## python matpltlib
+
+### pdf
+
+chinese support compromise
+
+use `rsvg-convert` to convert
+
+### rcParams
+
+[default `matplotlibrc` file](
+https://matplotlib.org/stable/tutorials/introductory/customizing.html#the-default-matplotlibrc-file)
+
+### svg
+
+svg able to copy, support chinese
+
+```python
+plt.rcParams["svg.fonttype"] = "none"
+```
+
+# vim
+
+## buffer
+
+### list all
+
+```vim
+:buffers " or
+:ls " or
+:files
+```
+
+### delete
+
+```vim
+:bdelete
+```
+
+### open/edit
+
+```vim
+" tab key works
+:buffer <name>
+```
+
+## Misc
+
+### debug log
+
+[SO: runtime log](https://stackoverflow.com/questions/3025615)
+
+```bash
+vim -V9myVim.log
+```
+
+### Explore (netrw)
+
+```vim
+; open current file's dir
+:E[xplore]
+```
+
+### Explore crash (netrw)
+
+```bash
+rm ~/.local/share/nvim/.netrwhist
+```
+
+### Increase column
+
+```vim
+c-v ; select block
+g c-a
+```
+
+### insert stdout
+
+```vim
+; insert below
+:r!<cmd>
+; insert above
+:-r!<cmd>
+; insert top
+:0r!<cmd>
+```
+
+### lower/upper case
+
+In select mode
+
+```vim
+u ; lower case
+U ; upper case
+```
+
+### netrw new file
+
+```vim
+# in netrw mode
+%
+```
+
+### fold
+
+```vim
+" set
+zf{motion} " :h motion.txt
+" toggle
+za
+" range
+:{range}fo[ld]
+```
+
+### highlight current line
+
+```vim
+:set cursorline
+```
+
+### list syntaxs
+
+```bash
+ls <$VIMRUNTIME>/syntax/
+```
+
+### markdown toc
+
+```vim
+:GenTocGFM
+```
+
+### mapped keys
+
+[SO](Is there any way to view the currently mapped keys in Vim?)
+
+```vim
+":n/v/imap
+:map
+:h inex
+```
+
+### popup window
+
+```vim
+🐁 <leader>[
+```
+
+### runtime folder
+
+```vim
+:echo $VIMRUNTIME
+```
+
+### split调整
+
+```vim
+c-w _ ; max height
+1c-w _ ;min height
+c-w = ;same height
+:on ; close others
+c-w o ;same above
+```
+
+### filetype syntax bindings
+
+<$VIMRUNTIME>/filetype.vim
+
+### set filetype (nvim)
+
+it can control syntax and coc
+
+```vim
+set filetype=python
+```
+
+### set syntax
+
+```vim
+:set syntax=
+```
+
+### syntax
+
+```vim
+; set
+:set syntax=html
+; get
+:set syntax
+```
+
+### status line
+
+```vim
+set laststatus=2
+```
+
+### jumplist
+
+```vim
+:ju " 列出jumplist
+<C-o> " 退
+<C-i> " 进
+```
+
+### cscope
+
+```vim
+; cs querytype
+🐁 <C-\>[sgdcteFia]
+```
+
+重新加载
+
+```vim
+:!cscope -R
+:cs reset
+```
+
+### mark
+
+```vim
+<leader>m " 标记/取消标记
+{N}<leader>m " 给第N组添加标记词
+{N}<leader>n " 取消第N组的标记
+<leader>M " 显示标记颜色和标记词
+🐁 <leader><F3> " 取消所有标记
+```
+
+### ale-fix
+
+ale支持的fix位于
+
+`autoload/ale/fix/registry.vim`
+
+所有fixer的调用脚本位于
+
+`autoload/ale/fixers/`
+
+### wrap line
+
+```vim
+; 🐁toggle
+<F9>
+```
+
+### terminal mode
+
+`:h :terminal`
+
+```
+# exit temrinal mode
+<C-\><C-N>
+# enter temrinal mode
+i
+```
+
+## diff
+
+### diffthis
+
+diff两个竖分buffers
+
+```vim
+; 分别在两个buffer里
+:difft[his]
+; 关闭，分别
+:diffoff
+```
+
+### gitgutter-diff
+
+```vim
+let g:gitgutter_diff_base = ''
+:GitGutterDiffOrig
+```
+
+## gitsigns diff
+
+```vim
+" Diff against the index
+:Gitsigns diffthis
+" Diff against the last commit
+:Gitsigns diffthis ~1
+```
+
+### diff obtain/put
+
+```vim
+" obtain
+do
+" put
+dp
+```
+
+
+## git
+
+### blame [# fugitive]
+
+和git相同的略。fugitive的特性：
+
+```vim
+:Git blame " blame整个文件
+:Gedit " 跳转光标下到对应的object（某个版本的某个文件）
+```
+
+### historic file [# fugitive]
+
+```vim
+Gedit <refname>
+enter " opon
+o " horizon open
+O " new tab open
+<num>gt " switch tag
+```
+
+### 显示commit信息 [git-messenger]
+
+```vim
+<leader>gm " 在popup窗口显示commit信息
+```
+
+## plugins
+
+### AnsiEsc
+
+```vim
+:AnsiEsc
+```
+
+### config-local
+
+`~/.local/share/nvim/config-local`
+
+```vim
+:ConfigSource
+:ConfigEdit
+:ConfigTrust
+:ConfigIgnore
+```
+
+### git-wip
+
+trigger every time `:w`,
+
+or trigger manually
+
+```bash
+:call GitWipSave()
+```
+
+### lightspeed.nvim
+
+```vim
+s ; forward
+S ; backward
+```
+
+### tree-sitter update
+
+[GH Issue: query.lua query: error at position #759](https://github.com/nvim-treesitter/nvim-treesitter/issues/759)
+
+```vim
+:TSUpdate
+```
+
+### tree-sitter reinstall
+
+```
+:TSUninstall all
+; exit vim
+home-manager switch
+vim
+:TSUpdate
+```
+
+### coc disable
+
+```vim
+:CocDisable
+:CocEnable
+```
+
+### coc disable diagnostic
+
+`:e` reload file is neccessary
+
+```vim
+:let b:coc_diagnostic_disable=1
+:e
+```
+
+## search
+
+### by column
+
+`:h /\%c`
+
+```vim
+\%23c   Matches in a specific column.
+\%<23c  Matches before a specific column.
+\%>23c  Matches after a specific column.
+\%.c    Matches at the cursor column.
+\%<.c   Matches before the cursor column.
+\%>.c   Matches after the cursor column.
+```
+
+## zellij
+
+### check
+
+```bash
+# list all DIR/FILE
+zellij setup --check
+```
+
+# nix
+
+## binary cache
+
+### paths
+
+`<nix channel url>/store-path.xz`
+
+e.g. https://mirror.tuna.tsinghua.edu.cn/nix-channels/nixos-21.11/store-paths.xz
+
+### query
+
+refers to [Discourse: Is it possible to query the binary cache?](https://discourse.nixos.org/t/is-it-possible-to-query-the-binary-cache/7893)
+
+```bash
+nix path-info \
+--store https://cache.nixos.org/ \
+-f '<nixpkgs>' \
+--argstr system x86_64-linux \
+<pkgs-name>
+```
+
+### import/export
+
+```
+# import may need sudo
+nix-store --import/--export
+```
+
+### copy
+
+[How to use a local directory as a nix binary cache?](https://discourse.nixos.org/t/how-to-use-a-local-directory-as-a-nix-binary-cache/655)
+
+```nix
+nix copy --no-check-sigs \
+--to <output/path> </nixstore/path>
+nix-env -i <output/path>
+```
+
+### verify
+
+```bash
+nix-store --verify [--check-contents] [--repair]
+```
+
+### get closure paths
+
+```bash
+nix-store -qR
+```
+
+### copy closure
+
+```bash
+sudo nix-copy-closure --from <user@ssh> <path>
+```
+
+## channel
+
+### force update
+
+```bash
+nix-channel --option tarball-ttl 0 --update [<channel>]
+```
+
+## config (nix)
+
+### manual
+
+```
+man nix.conf
+```
+
+### show
+
+```
+nix show-config
+```
+
+## config (pkgs)
+
+[nixpkgs manual: Global configuration](https://nixos.org/manual/nixpkgs/stable/#chap-packageconfig)
+
+### nixos
+
+/etc/nixosconfiguration.nix
+
+```nix
+{
+  nixpkgs.config = {
+    allowUnfree = true;
+  };
+}
+```
+
+### nix user
+
+~/.config/nixpkgs/config.nix
+
+```nix
+{
+  allowUnfree = true;
+}
+```
+
+## debug
+
+### setup
+
+```bash
+nix-shell
+. $stdenv/setup
+```
+
+### nix-build
+
+```bash
+nix-build '<nixpkgs>' -A xxx
+```
+
+## dependency
+
+### find referrers
+
+```bash
+nix-store --query --referrers <nix-path>
+```
+
+### find references
+
+```bash
+nix-store --query --references <nix-path>
+```
+
+## expr
+
+### eval
+
+```
+nix eval --expr "<EXPR>"
+```
+
+## folder
+
+### .desktop
+
+`~/.nix-profile/share/applications`
+
+## home-manager
+
+### sysconfig
+
+[GH: sysconfig](https://github.com/nix-community/home-manager/issues/143)
+
+```nix
+sysconfig = (import <nixpkgs/nixos> {}).config;
+```
+
+## garbage collect(gc)
+
+### sys garbage
+
+```bash
+sudo nix-collect-garbage -d
+```
+
+### usr garbage
+
+```bash
+nix-collect-garbage -d
+```
+
+### nix-build garbage
+
+````bash
+ls -l /nix/var/nix/gcroots/auto
+````
+
+### direnv garbage
+
+```bash
+ls -l /nix/var/nix/gcroots/per-user/<user>
+```
+
+## misc
+
+### build pkg
+
+```bash
+nix-build '<nixpkgs>' -A <pkg>
+```
+
+### cheatsheet
+
+[NixOS Wiki Cheatsheet](https://nixos.wiki/wiki/Cheatsheet)
+
+### nix direnv
+
+```bash
+echo "use nix" >> .envrc
+direnv allow
+```
+
+### gnome extension
+
+`pkgs/desktops/gnome/extensions/extensions.json`
+
+### prefetch url
+
+```bash
+nix-prefetch-url
+```
+
+### prefetch github
+
+```bash
+nix-prefetch-url --unpack \
+https://github.com/<owner>/
+<repo>/archive/<rev>.tar.gz
+```
+
+### prefetch sha256
+
+[GH](https://github.com/NixOS/nix/issues/1880)
+
+```bash
+nix-prefetch-url --unpack
+```
+
+### sha256
+
+```bash
+nix-hash --type sha256 \
+--flat --base32 <file>
+```
+
+### size
+
+```bash
+# man nix3-path-info
+# closure-size
+nix path-info -Sh <path>
+```
+
+### show drv
+
+```bash
+nix show-derivation <.drv>
+```
+
+### repl
+
+```nix
+pkgs = import <nixpkgs> {}
+```
+
+### old generations
+
+[Nix Wiki: Storage Opt](https://nixos.wiki/wiki/Storage_optimization)
+
+```bash
+sudo nix-env -p /nix/var/nix/profiles/system --list-generations
+sudo nix-collect-garbage -d
+# User Generations (Home-Manager)
+nix-collect-garbage -d
+```
+
+### path
+
+[Nix Pills: search Paths](https://nixos.org/guides/nix-pills/nix-search-paths.html)
+
+```bash
+nix-instantiate --eval -E "<path>"
+```
+
+### version
+
+```bash
+nix-version --hash
+```
+
+### nix-on-droid sshd
+
+```bash
+sshd-start
+```
+
+## option
+
+### home-manager option
+
+```bash
+home-manager option <OPTION>
+```
+
+### nixos-option
+
+​```bash
+nixos-option <OPTION>
+```
+
+## dependency
+
+### types
+
+[possible dependency types and examples](https://nixos.org/manual/nixpkgs/stable/#possible-dependency-types)
+
+| D type          | D’s host | D’s target |
+|-----------------|----------|------------|
+| build → *       | build    | (none)     |
+| build → build   | build    | build      |
+| build → host    | build    | host       |
+| build → target  | build    | target     |
+| host → *        | host     | (none)     |
+| host → host     | host     | host       |
+| host → target   | host     | target     |
+| target → *      | target   | (none)     |
+| target → target | target   | target     |
+
+### examples
+
+[possible dependency types and examples](https://nixos.org/manual/nixpkgs/stable/#possible-dependency-types)
+
+TODO: simplify
+
+* g++ links against the host platform’s glibc C library, which is a “host→ *” dependency with a triple of (bar, bar, *). Since it is a library, not a compiler, it has no “target”.
+
+* Since g++ is written in C, the gcc compiler used to compile it is a “build→ host” dependency of g++ with a triple of (foo, foo, bar). This compiler runs on the build platform and emits code for the host platform.
+
+* gcc links against the build platform’s glibc C library, which is a “build→ *” dependency with a triple of (foo, foo, *). Since it is a library, not a compiler, it has no “target”.
+
+* This gcc is itself compiled by an earlier copy of gcc. This earlier copy of gcc is a “build→ build” dependency of g++ with a triple of (foo, foo, foo). This “early gcc” runs on the build platform and emits code for the build platform.
+
+* g++ is bundled with libgcc, which includes a collection of target-machine routines for exception handling and software floating point emulation. libgcc would be a “target→ *” dependency with triple (foo, baz, *), because it consists of machine code which gets linked against the output of the compiler that we are building. It is a library, not a compiler, so it has no target of its own.
+
+* libgcc is written in C and compiled with gcc. The gcc that compiles it will be a “build→ target” dependency with triple (foo, foo, baz). It gets compiled and run at g++-build-time (on platform foo), but must emit code for the baz-platform.
+
+* g++ allows inline assembler code, so it depends on access to a copy of the gas assembler. This would be a “host→ target” dependency with triple (foo, bar, baz).
+
+* g++ (and gcc) include a library libgccjit.so, which wrap the compiler in a library to create a just-in-time compiler. In nixpkgs, this library is in the libgccjit package; if C++ required that programs have access to a JIT, g++ would need to add a “target→ target” dependency for libgccjit with triple (foo, baz, baz). This would ensure that the compiler ships with a copy of libgccjit which both executes on and generates code for the baz-platform.
+
+* If g++ itself linked against libgccjit.so (for example, to allow compile-time-evaluated C++ expressions), then the libgccjit package used to provide this functionality would be a “host→ host” dependency of g++: it is code which runs on the host and emits code for execution on the host.
+
+### propagation
+
+[dependency propagation](https://nixos.org/manual/nixpkgs/stable/#ssec-stdenv-dependencies)
+
+| host → target     | attribute name    | offset |
+|-------------------|-------------------|--------|
+| build --> build   | depsBuildBuild    | -1, -1 |
+| build --> host    | nativeBuildInputs | -1, 0  |
+| build --> target  | depsBuildTarget   | -1, 1  |
+| host --> host     | depsHostHost      | 0, 0   |
+| host --> target   | buildInputs       | 0, 1   |
+| target --> target | depsTargetTarget  | 1, 1   |
+
+
+## func/lib
+
+### fetch
+
+pkgs/build-support/fetch.*/
+
+### mkDerivation
+
+[nix manual: advanced-attrs](https://nixos.org/manual/nix/stable/expressions/advanced-attributes.html)
+
+pkgs/stdenv/generic/make-derivation.nix
+
+### <pkgs>.override
+
+* override {...}
+  * override arguments
+* overrideAttrs (old: {...})
+  * override attrs before mkDerivation
+
+## lang
+
+### indented string
+
+```bash
+''
+  # escape ${
+  ''${bash_var}
+  # escape ''
+  '''
+''
+```
+
+### <nixpkgs>
+
+[Nix manual: values](https://nixos.org/manual/nix/stable/language/values.html)
+
+`<path>`, like `<nixpkgs>`, is path
+
+listed in env `NIX_PATH`
+
+## module
+
+### args
+
+[SO: import module with](https://stackoverflow.com/questions/47650857/nixos-module-imports-with-arguments)
+
+```nix
+# foobar.nix
+{lib, withFoo ? "bar", ...}:
+{# ...}
+
+# configuration.nix
+args@{ ... }:
+{imports = [(
+  import ./foobar.nix (args // { withFoo = "baz"; })
+)];}
+```
+
+## nixos
+
+### list build-generations
+
+```bash
+sudo nix-env -p /nix/var/nix/profiles/system --list-generations
+```
+
+## nix-shell
+
+### build env
+
+```bash
+nix-shell '<nixpkgs>' -A <pkg>
+```
+
+### direnv
+
+```
+use nix <path>
+```
+
+### direnv fhs
+
+```
+if [[ -z "$IN_NIX_SHELL" ]]; then
+  use nix <path>
+fi
+```
+
+### patchShebangs
+
+```bash
+patchShebangs <path>
+```
+
+### non-interp shebang
+
+Inspired by [cursed.nix](https://discourse.nixos.org/t/c-u-r-s-e-d-n-i-x/12417/)
+
+My tests show, as long as there are arguments in nix-shell,
+the interp mode of nix-shell is not triggered!
+
+Therefore, I change `-v` to `--keep miao`
+
+Why it works?
+
+```bash
+#!/usr/bin/env -S nix-shell --keep miao
+```
+
+## pkg
+
+### bundle
+
+```bash
+# nix built-in
+nix bundle
+# github 465 start
+nix-bundle
+```
+
+### dependency
+
+```
+# all dependencies
+nix-store --query --requisites </nix/store/path>
+## or
+nix-store --query -R </nix/store/path>
+# nested tree
+nix-store --query --tree </nix/store/path>
+# only immediate dependencies
+nix-store --query --references </nix/store/path>
+```
+
+### nix-tree
+
+```bash
+nix-tree </nix/store/path>
+```
+
+### not in nixpkgs
+
+```bash
+nix-shell -E "with import <nixpkgs> {}; callPackage ./default.nix {}"
+```
+
+### priority
+
+```nix
+lib.lowPrio <pkg>
+```
+
+### search file
+
+```bash
+nix-locate 'bin/hello'
+```
+
+## pkgs
+
+### python
+
+```
+pkgs/top-level/python-packages.nix
+pkgs/development/python-modules/
+pkgs/development/interpreters/python/mk-python-derivation.nix
+```
+
+### python3 gi
+
+`pyobject3`
+
+### tex live
+
+```
+pkgs/tools/typesetting/tex/texlive/pkgs.nix
+```
+
+### static
+
+[SO: How to produce static executable on NixOS?](https://stackoverflow.com/questions/62065592/)
+
+```
+pkgs.glibc.static
+pkgs.zlib.static
+```
+
+## repl
+
+### help
+
+```nix
+:?
+```
+
+### open editor
+
+```nix
+:e <expr>
+```
+
+### home-manager
+
+refers to
+[nix repl home.nix config](https://gist.github.com/573/c06ccea910abcc8f9255cb8f3ace3e86)
+
+```nix
+hm = import <home-manager/modules> { configuration = ~/.config/nixpkgs/home.nix; pkgs = import <nixpkgs> {}; }
+```
+
+## Usage
+
+### musl libc
+
+Support -static
+
+```bash
+nix-shell -p pkgsCross.musl64.stdenv.cc
+x86_64-unknown-linux-musl-gcc -static hello.c
+```
+
+### static compile
+
+Nix currently use musl-gcc
+
+```bash
+nix-shell -p pkgsStatic.stdenv.cc
+x86_64-unknown-linux-musl-gcc -static hello.c
+```
+
+### aarch64 cross
+
+```bash
+nix-shell -p pkgsCross.aarch64-multiplatform.stdenv.cc
+aarch64-unknown-linux-gnu-gcc
+```
+
+# ISA
+
+## Arm
+
+### cond code
+
+2021.armv8.pdf: C1.2.4: Table C1-1
+
+| cond | Mnem     | Mean(int)              | Mean(flp)        | Cond flags    |
+|------|----------|------------------------|------------------|---------------|
+| 0000 | EQ       | ==                     | ==               | Z==1          |
+| 0001 | NE       | !=                     | != or unordered  | Z==0          |
+| 0010 | CS or HS | Carry set              | >=, or unordered | C==1          |
+| 0011 | CC or LO | Carry clear            | <                | C==0          |
+| 0100 | MI       | Minus, negative        | <                | N==1          |
+| 0101 | PL       | Plus, positive or zero | >=, or unordered | N==0          |
+| 0110 | VS       | Overflow               | Unordered        | V==1          |
+| 0111 | VC       | No overflow            | Ordered          | V==0          |
+| 1000 | HI       | Unsigned higher        | >, or unordered  | C==1&&Z==0    |
+| 1001 | LS       | Unsigned lower or same | <=               | !(C==1&&Z==0) |
+| 1010 | GE       | Signed >=              | >=               | N==V          |
+| 1011 | LT       | Signed <               | <, or unordered  | N!=V          |
+| 1100 | GT       | Signed >               | >                | Z==0&&N==V    |
+| 1101 | LE       | Signed <=              | <=, or unordered | !(Z==0&&N==V) |
+| 1110 | AL       | Always                 | Always           | Any           |
+| 1111 | NV       | Always                 | Always           | Any           |
+
+### cond flags
+
+2021.armv8.pdf: B1.2.2
+2021.armv8.pdf: C5.2.9
+
+```
+// gdb: p cpsr # Current Program Status Register
+// 6     333222       | N: Negative
+// 3 ... 210987 ... 0 | Z: Zero
+//  RES0  NZCV  RES0  | C: Carry (unsigned)
+//                    | V: Overflow (signed)
+//
+mrs x1, NZCV // get NZCV
+msr NZCV, x1 // set NZCV
+```
+
+### page size (Manual)
+
+2021.armv8.pdf:
+
+* D5.2.7:
+  * granule & block size
+* D5.5.6
+  * The Contiguous bit
+
+### page size (Linux)
+
+`arch/arm64/mm/hugetlbpage.c`
+
+| Page Size | CONT PTE | PMD  | CONT PMD | PUD |
+|-----------|----------|------|----------|-----|
+| 4K        | 64K      | 2M   | 32M      | 1G  |
+| 16K       | 2M       | 32M  | 1G       |     |
+| 64K       | 2M       | 512M | 16G      |     |
+
+### ldst align
+
+2021.armv8.pdf
+
+B2.5.2
+
+* Load or Store of Single or Multiple regs
+* Load/Store-Exclusive and Atomic insts
+* Non-atomic Load-Acquire/Store-Release insts
+
+### Exception levels
+
+| EL  | Description                               | Typical        |
+|-----|-------------------------------------------|----------------|
+| EL0 | unprivileged execution                    | Applications   |
+| EL1 | privileged execution                      | OS kernel      |
+| EL2 | virtualization                            | Hypervisor     |
+| EL3 | switching between Secure/Non-secure state | Secure monitor |
+
+## Arm-Insts
+
+### refs
+
+📑 Arm Architecture Reference Manual Armv8
+
+### addr
+
+* normal: `[x1]`
+* offset: `[x1, #12]`
+* pre-index: `[x1, #12]!` // x1+=12, addr=x1
+* post-index: `[x1], #12` // addr=x1, x1+=12
+
+### no cmov?
+
+[2014: SO: arm no conditinal execution](https://stackoverflow.com/questions/22168992)
+
+### ptr auth
+
+* [2017: LWN](https://lwn.net/Articles/718888/)
+* § Pointer authentication in AArch64 state
+
+arm linux only use bottom 40 bits of a pointer
+
+```
+pointer[63:40] = PAC(pointer[39:40], key, modifier)
+AUT(pointer[63:40], pointer[39:40], key, modifier)
+```
+
+five separate keys:
+
+* two for executable (instruction) pointers
+* two for data pointers
+* one generic pointers
+
+### ldtr, sttr
+
+[SO: Load/Store unprivileged](https://stackoverflow.com/questions/59287799/)
+
+### ldnp, stnp
+
+ARMv8
+
+[Non-temporal load and store pair](https://developer.arm.com/documentation/den0024/a/Memory-Ordering/Barriers/Non-temporal-load-and-store-pair)
+
+Hint mem system no cache, typically in streaming data.
+
+### ldaxr, stxr
+
+[DynamoRIO: Exclusive Monitor](https://dynamorio.org/page_ldstex.html)
+
+E.g. an atomic subtract
+
+```
+1f404:   ldaxr   w1, [x0]
+1f408:   sub     w2, w1, #0x1
+1f40c:   stxr    w3, w2, [x0]
+1f410:   cbnz    w3, 1f404
+```
+
+cannot be nested,
+
+as each hardware thread supports only one monitor.
+
+## riscv
+
+### regs
+
+https://en.wikichip.org/wiki/risc-v/registers
+
+* C col: 3-bit compressed encoding
+* Last col: save by caller or callee
+
+| C   | Reg    | ABI   | Description               |   |
+|-----|--------|-------|---------------------------|---|
+| -   | x0     | zero  | hardwired zero            | - |
+| -   | x1     | ra    | return addr               | r |
+| -   | x2     | sp    | stack pointer             | e |
+| -   | x3     | gp    | global pointer            | - |
+| -   | x4     | tp    | thread pointer            | - |
+| -   | x5-7   | t0-2  | temp reg 0-2              | r |
+| 0   | x8     | s0/fp | saved reg 0/frame pointer | e |
+| 1   | x9     | s1    | saved reg 1               | e |
+| 2-3 | x10-11 | a0-1  | func arg 0-1/ret val 0-1  | r |
+| 4-7 | x12-15 | a2-5  | func arg 2-7              | r |
+| -   | x16-17 | a6-7  | func arg 6-7              | r |
+| -   | x18-27 | s2-11 | saved reg 2-11            | e |
+| -   | x28-31 | t3-t6 | temp reg 3-6              | r |
+
+## x86
+
+### Cache Parameters
+
+2022.intel64_opt.pdf
+
+搜索Cache Parameters可搜到各个架构的cache参数
+
+### caller/callee reg
+
+x86_64-abi.pdf: Figure 3.4
+
+x86-64-linux callee saved regs:
+
+%rbx, %rbp, %r12-r15
+
+### conditinal code
+
+2018.intel64.pdf: Volume 1: Appendix B: Table B-1
+
+| CC        | subcode | status          |
+|-----------|---------|-----------------|
+| O         | 0000    | OF              |
+| NO        | 0001    | !OF             |
+| C, B, NAE | 0010    | CF              |
+| NB, AE    | 0011    | !CF             |
+| E, Z      | 0100    | ZF              |
+| NE, NZ    | 0101    | !ZF             |
+| BE, NA    | 0110    | CF\|ZF          |
+| NBE, A    | 0111    | !(CF\|ZF)       |
+| S         | 1000    | SF              |
+| NS        | 1001    | !SF             |
+| P, PE     | 1010    | PF              |
+| NP, PO    | 1011    | !PF             |
+| L, NGE    | 1100    | SF!=OF          |
+| NL, GE    | 1101    | SF==OF          |
+| LE, NG    | 1110    | (SF!=OF)\|ZF    |
+| NLE, G    | 1111    | !((SF!=OF)\|ZF) |
+
+### rflags/eflags
+
+2020.amd64.pdf: 3.1.4
+
+```
+// 11           | Overflow  Direction
+// 10..76.4.2.0 | Sign      Zero
+// OD  SZ A P C | Auxiliary Parity
+//              | Carry
+pushf // get
+popf  // set
+```
+
+### regs ext
+
+2020.amd64.pdf: 3.1.2
+
+* byte(8) & word(16) oprs not modify high 56 or 48 bits
+* dword(32) oprs zero-extended to 64 bits.
+
+### legacy encode
+
+2020.amd64.pdf: Figure 1-2
+
+2018.intel64.pdf: Figure 2-1
+
+| Name          | B  | Description      |
+|---------------|----|------------------|
+| Legacy Prefix | ≤5 | optional         |
+| REX           | 1  | 64-bit mode only |
+| Escape        | 2  | optional         |
+| Opcode        | 1  |                  |
+| ModRM         | 1  | optional         |
+| SIB           | 1  | optional         |
+| Displacement  |    |                  |
+| Immediate     |    |                  |
+
+### ext encode
+
+2020.amd64.pdf: Figure 1-2
+
+| Name           | B       | Description                       |
+|----------------|---------|-----------------------------------|
+| Legacy Prefix  | ≤4      | optional                          |
+| VEX/XOP        | 1       |                                   |
+| RXB.map+Select | 1       | not for VEX C5                    |
+| W.vvvv.L.pp    | 1       | not for VEX C5                    |
+| R.vvvv.L.pp    | 1       | for VEX C5                        |
+| Opcode         | 1       |                                   |
+| ModRM          | 1       | optional                          |
+| SIB            | 1       | optional                          |
+| Displacement   | 1,2,4,8 | 8B Disp & 8B Imm mutual exclusive |
+| Immediate      | 1,2,4,8 | 8B Disp & 8B Imm mutual exclusive |
+
+### page size
+
+2020.amd64.pdf: Table 5-1
+
+* PAE: Physical-Address Extensions
+* PSE: Page-Size Extensions
+* PDPE:
+* PDE
+
+| Mode   | PAE | PSE | PDPE.PS | PDE.PS | Page Size | Max VA | Max PA |
+|--------|-----|-----|---------|--------|-----------|--------|--------|
+| Long   | 1   | -   | 0       | 0      | 4KB       | 64bit  | 52bit  |
+| Long   | 1   | -   | 0       | 1      | 2MB       | 64bit  | 52bit  |
+| Long   | 1   | -   | 1       | -      | 1GB       | 64bit  | 52bit  |
+| Legacy | 1   | -   | 0       | 0      | 4KB       | 32bit  | 52bit  |
+| Legacy | 1   | -   | 0       | 1      | 2MB       | 32bit  | 52bit  |
+| Legacy | 0   | 0   | 0       | -      | 4KB       | 32bit  | 32bit  |
+| Legacy | 0   | 1   | 0       | 0      | 4kB       | 32bit  | 32bit  |
+| Legacy | 0   | 1   | 0       | 1      | 4MB       | 32bit  | 40bit  |
+
+### modrm
+
+2020.amd64.pdf: Table 1-10
+
+ModRM = mod[2] : reg[3] : r/m[3]
+
+M: MMX, X: XMM, Y: YMM
+
+| b   | reg             | r/m (mod=11b)   | r/m (mod!=11b) |
+|-----|-----------------|-----------------|----------------|
+| 000 | rAX,M0,X0,Y0    | rAX,M0,X0,Y0    | [rAX]          |
+| 001 | rCX,M1,X1,Y1    | rCX,M1,X1,Y1    | [rCX]          |
+| 010 | rDX,M2,X2,Y2    | rDX,M2,X2,Y2    | [rDX]          |
+| 011 | rBX,M3,X3,Y3    | rBX,M3,X3,Y3    | [rBX]          |
+| 100 | AH,rSP,M4,X4,Y4 | AH,rSP,M4,X4,Y4 | SIB            |
+| 101 | CH,rBP,M5,X5,Y5 | CH,rBP,M5,X5,Y5 | [rBP]*         |
+| 110 | DH,rSI,M6,X6,Y6 | DH,rSI,M6,X6,Y6 | [rSI]          |
+| 111 | BH,rDI,M7,X7,Y7 | BH,rDI,M7,X7,Y7 | [rDI]          |
+
+### sib
+
+2020.amd64.pdf: Table 1-12
+
+SIB = scale[2] : index[3] : base[3]
+
+scale = 2^(SIB.scale)
+
+| b   | index   | base           |
+|-----|---------|----------------|
+| 000 | [rAX]   | [rAX]          |
+| 001 | [rCX]   | [rCX]          |
+| 010 | [rDX]   | [rDX]          |
+| 011 | [rBX]   | [rBX]          |
+| 100 | (none)1 | [rSP]          |
+| 101 | [rBP]   | [rBP], (none)2 |
+| 110 | [rSI]   | DH, [rSI]      |
+| 111 | [rDI]   | BH, [rDI]      |
+
+### mem opr
+
+* Seg Selector: 16
+* Offset (or Linear Addr): 32/64
+
+### mem opr: seg
+
+2018.intel64.pdf: Table 3-5
+
+Default Segment Selection
+
+| Ref Type            | Reg | Default Rule                                             |
+|---------------------|-----|----------------------------------------------------------|
+| Inst                | CS  | All inst fetches                                         |
+| Stack               | SS  | All pushes & pops                                        |
+| Local Data          | DS  | All data, except relative to stack or string destination |
+| Destination Strings | ES  | Destination string inst                                  |
+
+### mem opr: off
+
+2018.intel64.pdf: Table 3-5
+
+```
+Offset =
+  Base  + (Index * Scale) + Displacement
+  +- -+   +- -+     +-+      +------+
+  |eax|   |eax|     |1|      |None  |
+  |ebx|   |ebx|     |2|      |8-bit |
+  |ecx|   |ecx|     |4|      |16-bit|
+  |edx| + |edx|  *  |8|   +  |32-bit|
+  |esp|   |ebp|     | |      |      |
+  |ebp|   |esi|     | |      |      |
+  |esi|   |edi|     | |      |      |
+  |edi|   |   |     | |      |      |
+  +- -+   +---+     +-+      +------+
+```
+
+### seg regs
+
+[Kernel: FS and GS](https://kernel.org/doc/html/latest/x86/x86_64/fsgs.html)
+
+* 32-bit mode
+  * 6 seg regs, support seg limit
+* 64-bit mode
+  * C/S/D/ES are ignored, base addr is 0
+  * FS: Thread Local Storage(TLS)
+  * GS: use freely by app
+
+Read and write from user space
+
+* syscall: arch_prctl()
+* FSGSBASE inst family (introduced by Ivy Bridge)
+
+Addressing
+
+* compiler: `__seg_fs`, `__seg_gs`
+* assembly: `mov %fs:offset, %reg`, `mov %reg, %fs:offset`
