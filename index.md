@@ -440,6 +440,12 @@ service linux start
 
 ## gcc
 
+### default -march
+
+```
+gcc -Q --help=target
+```
+
 ### inline asm
 
 No clobber, may segment fault!
@@ -547,6 +553,22 @@ gem5.opt configs/example/se.py --cmd <CMD>
 ```
 
 ## git
+
+### create Repos/*
+
+```bash
+# can use git update then
+git clone --mirror <URL>
+```
+
+### convert bare to mirror
+
+[SO](https://stackoverflow.com/questions/12350918)
+
+```bash
+git config remote.origin.fetch "+refs/*:refs/*" 
+git config remote.origin.mirror true
+```
 
 ### remote branches
 
@@ -1057,6 +1079,20 @@ pandoc -D <FORMAT>
 --print-default-data-file=templates/styles.html
 ```
 
+## parallel
+
+### home (tilde)
+
+write '~' to file `home`
+
+```bash
+parallel --tag ssh {1} ls {2}/Codes ::: myloongson55 myloongson56 myloongson57 myloongson58 :::: ./home
+```
+
+```bash
+parallel --tag ssh {1} ls \\~/Codes ::: myloongson55 myloongson56 myloongson57 myloongson58
+```
+
 ## perl
 
 ### man/doc
@@ -1514,6 +1550,15 @@ WantedBy=default.target multi-user.target
 ExecStart=swapon /swapfile
 ```
 
+## tar
+
+### create directory
+
+```
+# NOTED: no ./ before dir !!!
+tar czf bin.tar.gz <dir>
+```
+
 ## tmux
 
 ### auto start tmux
@@ -1596,6 +1641,12 @@ DISPLAY=:2 <command>
 xrandr --output DP-1 --scale-from 2880x1800
 # Stop flicker
 xrandr --output eDP-1 --scale 0.9999x0.9999
+```
+
+### x0vncserver
+
+```bash
+x0vncserver -password <PSWD> -securitytypes=none -geometry 800x600+0+480 -FrameRate 10
 ```
 
 ## xdg
@@ -2026,6 +2077,13 @@ c-w o ;same above
 
 <$VIMRUNTIME>/filetype.vim
 
+### scrollbind
+
+```vim
+:set scrollbind
+:set noscrollbind
+```
+
 ### set filetype (nvim)
 
 it can control syntax and coc
@@ -2380,6 +2438,14 @@ nix show-config
 }
 ```
 
+## nix daemon
+
+### proxy
+
+[Nix manual: Proxy Environment Variables](https://nixos.org/manual/nix/stable/installation/env-variables.html#proxy-environment-variables)
+
+`/etc/systemd/system/nix-daemon.service.d/override.conf`
+
 ## debug
 
 ### setup
@@ -2387,6 +2453,12 @@ nix show-config
 ```bash
 nix-shell
 . $stdenv/setup
+```
+
+### nix-build
+
+```bash
+nix-build -K <drv>
 ```
 
 ### nix-build
@@ -2470,6 +2542,14 @@ nix-build '<nixpkgs>' -A <pkg>
 ### cheatsheet
 
 [NixOS Wiki Cheatsheet](https://nixos.wiki/wiki/Cheatsheet)
+
+### disable gcc hardening in shell
+
+[SE: Disabling the security hardening options for a `nix-shell` environment](https://unix.stackexchange.com/questions/356232/disabling-the-security-hardening-options-for-a-nix-shell-environment)
+
+```bash
+export NIX_HARDENING_ENABLE=""
+```
 
 ### nix direnv
 
@@ -3150,6 +3230,27 @@ popf  // set
 | Legacy | 0   | 0   | 0       | -      | 4KB       | 32bit  | 32bit  |
 | Legacy | 0   | 1   | 0       | 0      | 4kB       | 32bit  | 32bit  |
 | Legacy | 0   | 1   | 0       | 1      | 4MB       | 32bit  | 40bit  |
+
+### mnemonic syntax
+
+2020.amd64.pdf: Volume 3: 2.5.1
+
+```
+        ADDPD xmm1, xmm2/mem128
+        ──┬── ──┬─  ───────┬───
+Mnemonic ─┘     │          │
+                └────────┐ │
+First Source Operand    ─┘ │
+and Destination Operand    │
+                           │
+Second Source Operand ─────┘
+```
+
+### opcode syntax
+
+2020.amd64.pdf: Volume 3: 2.5.2
+
+2018.intel64.pdf: Volume 2: 3.1.1.1
 
 ### modrm
 
